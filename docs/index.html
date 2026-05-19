@@ -17,9 +17,8 @@
     <ul id="guestList"></ul>
 
     <script>
-        // Если в шаге 7 вы сохранили URL с /rest/v1/ на конце, укажите его здесь без дополнительного /rest/v1/
-        const SUPABASE_URL = 'https://dmqptpsxmzsianryeppw.supabase.co'; // <-- ваш Project URL (без /rest/v1/)
-        const SUPABASE_ANON_KEY = 'sb_publishable_-Vce0VdU5bALiNYq-_zQtw_ptyrrRvQ'; // ваш Publishable key
+        const SUPABASE_URL = 'https://dmqptpsxmzsianryeppw.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_-Vce0VdU5bALiNYq-_zQtw_ptyrrRvQ';
 
         const guestNameInput = document.getElementById('guestName');
         const submitBtn = document.getElementById('submitBtn');
@@ -45,9 +44,11 @@
                         li.textContent = guest.guest_name;
                         guestList.appendChild(li);
                     });
+                } else {
+                    console.error('Ожидался массив, получено:', guests);
                 }
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                console.error('Ошибка при загрузке гостей:', error);
                 guestList.innerHTML = '<li style="color:red">Ошибка загрузки</li>';
             }
         }
@@ -70,8 +71,8 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 await loadGuests();
             } catch (error) {
-                console.error('Ошибка добавления:', error);
-                alert('Не удалось добавить имя.');
+                console.error('Ошибка при добавлении гостя:', error);
+                alert('Не удалось добавить имя. Попробуйте ещё раз.');
             }
         }
 
