@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Гостевая книга</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 0 20px; }
+    </style>
+</head>
+<body>
+    <h1>Гостевая книга</h1>
+    <p>Введите своё имя:</p>
+    <input type="text" id="guestName" maxlength="20" placeholder="Ваше имя">
+    <button id="submitBtn">Подтвердить</button>
+
+    <h2>Список гостей</h2>
+    <ul id="guestList"></ul>
+
+    <script>
+        // Если в шаге 7 вы сохранили URL с /rest/v1/ на конце, укажите его здесь без дополнительного /rest/v1/
+        const SUPABASE_URL = 'https://dmqptpsxmzsianryeppw.supabase.co'; // <-- ваш Project URL (без /rest/v1/)
+        const SUPABASE_ANON_KEY = 'sb_publishable_-Vce0VdU5bALiNYq-_zQtw_ptyrrRvQ'; // ваш Publishable key
+
+        const guestNameInput = document.getElementById('guestName');
+        const submitBtn = document.getElementById('submitBtn');
+        const guestList = document.getElementById('guestList');
+
+        async function loadGuests() {
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/example01_guests?select=*&order=guest_id.desc`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    }
+                );
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const guests = await response.json();
+                guestList.innerHTML = '';
+                if (Array.isArray(guests)) {
+                    guests.forEach(guest => {
+                        const li = document.createElement('li');
+                        li.textContent = guest.guest_name;
+                        guestList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                guestList.innerHTML = '<li style="color:red">Ошибка загрузки</li>';
+            }
+        }
+
+        async function addGuest(name) {
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/example01_guests`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ guest_name: name })
+                    }
+                );
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                await loadGuests();
+            } catch (error) {
+                console.error('Ошибка добавления:', error);
+                alert('Не удалось добавить имя.');
+            }
+        }
+
+        submitBtn.addEventListener('click', () => {
+            const name = guestNameInput.value.trim();
+            if (name) {
+                addGuest(name);
+                guestNameInput.value = '';
+            } else {
+                alert('Пожалуйста, введите имя.');
+            }
+        });
+
+        loadGuests();
+    </script>
+</body>
+</html>
