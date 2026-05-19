@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Гостевая книга (с библиотекой)</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 0 20px; }
+        a { display: block; margin-top: 20px; }
+    </style>
+    <!-- Подключаем библиотеку Supabase через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Гостевая книга (supabase-js)</h1>
+    <p>Введите своё имя:</p>
+    <input type="text" id="guestName" maxlength="20" placeholder="Ваше имя">
+    <button id="submitBtn">Подтвердить</button>
+
+    <h2>Список гостей</h2>
+    <ul id="guestList"></ul>
+
+    <a href="index.html">← Назад к выбору</a>
+
+    <script>
+        // Создаём клиент Supabase
+        const supabaseClient = supabase.createClient(
+            'https://supabase-github-pages-demo.onrender.com',  // ваш прокси-URL
+            'sb_publishable_-Vce0VdU5bALiNYq-_zQtw_ptyrrRvQ'     // ваш публичный ключ
+        );
+
+        const guestNameInput = document.getElementById('guestName');
+        const submitBtn = document.getElementById('submitBtn');
+        const guestList = document.getElementById('guestList');
+
+        async function loadGuests() {
+            // Запрос к таблице с сортировкой
+            const { data: guests, error } = await supabaseClient
+                .from('example01_guests')
+                .select('*')
+                .order('guest_id', { ascending: false });
+
+            if (error) {
+                console.error('Ошибка загрузки:', error);
+                guestList.innerHTML = '<li style="color:red">Ошибка загрузки</li>';
+                return;
+            }
+
+            guestList.innerHTML = '';
+            guests.forEach(guest => {
+                const li = document.createElement('li');
+                li.textContent = guest.guest_name;
+                guestList.appendChild(li);
+            });
+        }
+
+        async function addGuest(name) {
+            const { error } = await supabaseClient
+                .from('example01_guests')
+                .insert({ guest_name: name });
+
+            if (error) {
+                console.error('Ошибка добавления:', error);
+                alert('Не удалось добавить имя.');
+            } else {
+                await loadGuests(); // обновляем список
+            }
+        }
+
+        submitBtn.addEventListener('click', () => {
+            const name = guestNameInput.value.trim();
+            if (name) {
+                addGuest(name);
+                guestNameInput.value = '';
+            } else {
+                alert('Пожалуйста, введите имя.');
+            }
+        });
+
+        // Первоначальная загрузка списка
+        loadGuests();
+    </script>
+</body>
+</html>
